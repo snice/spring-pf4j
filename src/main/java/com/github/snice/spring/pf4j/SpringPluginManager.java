@@ -25,6 +25,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import javax.annotation.PostConstruct;
+import java.nio.file.Path;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +37,18 @@ public class SpringPluginManager extends DefaultPluginManager implements Applica
     private ApplicationContext applicationContext;
 
     private ExtensionsInjector extensionsInjector;
+
+    public SpringPluginManager() {
+        super();
+    }
+
+    public SpringPluginManager(Path... pluginsRoots) {
+        super(pluginsRoots);
+    }
+
+    public SpringPluginManager(List<Path> pluginsRoots) {
+        super(pluginsRoots);
+    }
 
     @Override
     protected ExtensionFactory createExtensionFactory() {
