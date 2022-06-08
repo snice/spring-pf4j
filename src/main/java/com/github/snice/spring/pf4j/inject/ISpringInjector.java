@@ -1,6 +1,6 @@
-package com.itfenbao.spring.pf4j.inject;
+package com.github.snice.spring.pf4j.inject;
 
-import com.itfenbao.spring.pf4j.SpringPluginManager;
+import com.github.snice.spring.pf4j.SpringPluginManager;
 import org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
 

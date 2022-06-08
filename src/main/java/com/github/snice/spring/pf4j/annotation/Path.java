@@ -1,4 +1,4 @@
-package com.itfenbao.spring.pf4j.annotation;
+package com.github.snice.spring.pf4j.annotation;
 
 import java.lang.annotation.*;
 

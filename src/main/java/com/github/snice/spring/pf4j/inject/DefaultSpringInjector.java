@@ -1,6 +1,6 @@
-package com.itfenbao.spring.pf4j.inject;
+package com.github.snice.spring.pf4j.inject;
 
-import com.itfenbao.spring.pf4j.SpringPluginManager;
+import com.github.snice.spring.pf4j.SpringPluginManager;
 import org.pf4j.Extension;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;

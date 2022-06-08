@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.itfenbao.spring.pf4j;
+package com.github.snice.spring.pf4j;
 
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.itfenbao.spring.pf4j;
+package com.github.snice.spring.pf4j;
 
 import com.google.common.reflect.ClassPath;
-import com.itfenbao.spring.pf4j.inject.ISpringInjector;
+import com.github.snice.spring.pf4j.inject.ISpringInjector;
 import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

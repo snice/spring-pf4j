@@ -1,7 +1,7 @@
-package com.itfenbao.spring.pf4j.inject;
+package com.github.snice.spring.pf4j.inject;
 
-import com.itfenbao.spring.pf4j.SpringPluginManager;
-import com.itfenbao.spring.pf4j.annotation.Path;
+import com.github.snice.spring.pf4j.SpringPluginManager;
+import com.github.snice.spring.pf4j.annotation.Path;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
