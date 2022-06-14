@@ -15,10 +15,14 @@
  */
 package com.github.snice.spring.pf4j;
 
+import com.github.snice.spring.pf4j.listener.PluginApplicationListener;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.util.Collection;
 
 /**
  * @author Decebal Suiu
@@ -48,7 +52,20 @@ public abstract class SpringPlugin extends Plugin {
         applicationContext = null;
     }
 
-    protected abstract ApplicationContext createApplicationContext();
+    protected ApplicationContext createApplicationContext() {
+        ApplicationContext appContext = ((SpringPluginManager) getWrapper().getPluginManager()).getApplicationContext();
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+        applicationContext.setClassLoader(getWrapper().getPluginClassLoader());
+        applicationContext.setParent(appContext);
+        applicationContext.register(componentClasses());
+        Collection<PluginApplicationListener> pluginListeners = appContext.getBeansOfType(PluginApplicationListener.class).values();
+        for (PluginApplicationListener listener : pluginListeners)
+            applicationContext.addApplicationListener(listener);
+        applicationContext.refresh();
+        return applicationContext;
+    }
+
+    public abstract Class[] componentClasses();
 
     public abstract String basePackage();
 
