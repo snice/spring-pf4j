@@ -15,21 +15,25 @@
  */
 package com.github.snice.spring.pf4j;
 
-import com.github.snice.spring.pf4j.listener.PluginApplicationListener;
+import com.github.snice.spring.pf4j.listener.PluginListener;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.util.Collection;
 
 /**
  * @author Decebal Suiu
  */
-public abstract class SpringPlugin extends Plugin {
+public abstract class SpringPlugin extends Plugin implements ApplicationListener<ContextRefreshedEvent> {
 
     private ApplicationContext applicationContext;
+
+    private boolean isRefreshed;
 
     public SpringPlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -58,11 +62,19 @@ public abstract class SpringPlugin extends Plugin {
         applicationContext.setClassLoader(getWrapper().getPluginClassLoader());
         applicationContext.setParent(appContext);
         applicationContext.register(componentClasses());
-        Collection<PluginApplicationListener> pluginListeners = appContext.getBeansOfType(PluginApplicationListener.class).values();
-        for (PluginApplicationListener listener : pluginListeners)
-            applicationContext.addApplicationListener(listener);
+        applicationContext.addApplicationListener(this);
         applicationContext.refresh();
         return applicationContext;
+    }
+
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        if (isRefreshed) return;
+        isRefreshed = true;
+        Collection<PluginListener> pluginListeners = getApplicationContext().getBeansOfType(PluginListener.class).values();
+        for (PluginListener listener : pluginListeners) {
+            listener.onPluginEvent(event);
+        }
     }
 
     public abstract Class[] componentClasses();
