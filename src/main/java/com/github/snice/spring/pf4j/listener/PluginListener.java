@@ -1,8 +1,8 @@
 package com.github.snice.spring.pf4j.listener;
 
-import org.springframework.context.ApplicationEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 @FunctionalInterface
-public interface PluginListener<E extends ApplicationEvent> {
-    void onPluginEvent(E event);
+public interface PluginListener {
+    void onPluginEvent(ContextRefreshedEvent event);
 }

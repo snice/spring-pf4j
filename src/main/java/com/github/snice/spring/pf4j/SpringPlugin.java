@@ -29,11 +29,22 @@ import java.util.Collection;
 /**
  * @author Decebal Suiu
  */
-public abstract class SpringPlugin extends Plugin implements ApplicationListener<ContextRefreshedEvent> {
+public abstract class SpringPlugin extends Plugin {
+
+
+    private boolean isRefreshed;
 
     private ApplicationContext applicationContext;
 
-    private boolean isRefreshed;
+    private ApplicationListener<ContextRefreshedEvent> applicationListener = event -> {
+        if (applicationContext == null) return;
+        if (isRefreshed) return;
+        isRefreshed = true;
+        Collection<PluginListener> pluginListeners = getApplicationContext().getParent().getBeansOfType(PluginListener.class).values();
+        for (PluginListener listener : pluginListeners) {
+            listener.onPluginEvent(event);
+        }
+    };
 
     public SpringPlugin(PluginWrapper wrapper) {
         super(wrapper);
@@ -62,19 +73,9 @@ public abstract class SpringPlugin extends Plugin implements ApplicationListener
         applicationContext.setClassLoader(getWrapper().getPluginClassLoader());
         applicationContext.setParent(appContext);
         applicationContext.register(componentClasses());
-        applicationContext.addApplicationListener(this);
+        applicationContext.addApplicationListener(applicationListener);
         applicationContext.refresh();
         return applicationContext;
-    }
-
-    @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
-        if (isRefreshed) return;
-        isRefreshed = true;
-        Collection<PluginListener> pluginListeners = getApplicationContext().getBeansOfType(PluginListener.class).values();
-        for (PluginListener listener : pluginListeners) {
-            listener.onPluginEvent(event);
-        }
     }
 
     public abstract Class[] componentClasses();
