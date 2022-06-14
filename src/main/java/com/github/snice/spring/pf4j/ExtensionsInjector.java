@@ -15,8 +15,8 @@
  */
 package com.github.snice.spring.pf4j;
 
-import com.google.common.reflect.ClassPath;
 import com.github.snice.spring.pf4j.inject.ISpringInjector;
+import com.google.common.reflect.ClassPath;
 import org.pf4j.PluginWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -61,18 +60,19 @@ public class ExtensionsInjector {
             if (pluginWrapper.getPlugin() instanceof SpringPlugin) {
                 String basePackage = ((SpringPlugin) pluginWrapper.getPlugin()).basePackage();
                 ClassPath classPath = ClassPath.from(classLoader);
-                List<Class> classes = classPath.getTopLevelClassesRecursive(basePackage).stream().filter(it -> it.load().getClassLoader() != getClass().getClassLoader()).map(it -> it.load()).collect(Collectors.toList());
+                List<Class> classes =
+                        classPath.getTopLevelClassesRecursive(basePackage).stream().filter(it -> it.load().getClassLoader() != getClass().getClassLoader()).map(it -> it.load()).collect(Collectors.toList());
                 for (Class c : classes) {
-                    Optional<ISpringInjector> springInjector = springInjectors.stream().filter(it -> it.isSupport(c)).findFirst();
-                    if (springInjector.isPresent()) springInjector.get().register(c);
+                    List<ISpringInjector> list = springInjectors.stream().filter(it -> it.isSupport(c)).collect(Collectors.toList());
+                    for (ISpringInjector injector : list) injector.register(c);
                 }
             } else {
                 Set<String> extensionClassNames = springPluginManager.getExtensionClassNames(pluginId);
                 for (String extensionClassName : extensionClassNames) {
                     log.debug("Register extension '{}' as bean", extensionClassName);
                     Class<?> c = classLoader.loadClass(extensionClassName);
-                    Optional<ISpringInjector> springInjector = springInjectors.stream().filter(it -> it.isSupport(c)).findFirst();
-                    if (springInjector.isPresent()) springInjector.get().register(c);
+                    List<ISpringInjector> list = springInjectors.stream().filter(it -> it.isSupport(c)).collect(Collectors.toList());
+                    for (ISpringInjector injector : list) injector.register(c);
                 }
             }
         } catch (Exception e) {
@@ -87,17 +87,18 @@ public class ExtensionsInjector {
             if (pluginWrapper.getPlugin() instanceof SpringPlugin) {
                 String basePackage = ((SpringPlugin) pluginWrapper.getPlugin()).basePackage();
                 ClassPath classPath = ClassPath.from(classLoader);
-                List<Class> classes = classPath.getTopLevelClassesRecursive(basePackage).stream().filter(it -> it.load().getClassLoader() != getClass().getClassLoader()).map(it -> it.load()).collect(Collectors.toList());
+                List<Class> classes =
+                        classPath.getTopLevelClassesRecursive(basePackage).stream().filter(it -> it.load().getClassLoader() != getClass().getClassLoader()).map(it -> it.load()).collect(Collectors.toList());
                 for (Class c : classes) {
-                    Optional<ISpringInjector> springInjector = springInjectors.stream().filter(it -> it.isSupport(c)).findFirst();
-                    if (springInjector.isPresent()) springInjector.get().unregister(c);
+                    List<ISpringInjector> list = springInjectors.stream().filter(it -> it.isSupport(c)).collect(Collectors.toList());
+                    for (ISpringInjector injector : list) injector.unregister(c);
                 }
             } else {
                 Set<String> extensionClassNames = springPluginManager.getExtensionClassNames(pluginId);
                 for (String extensionClassName : extensionClassNames) {
                     Class<?> c = classLoader.loadClass(extensionClassName);
-                    Optional<ISpringInjector> springInjector = springInjectors.stream().filter(it -> it.isSupport(c)).findFirst();
-                    if (springInjector.isPresent()) springInjector.get().unregister(c);
+                    List<ISpringInjector> list = springInjectors.stream().filter(it -> it.isSupport(c)).collect(Collectors.toList());
+                    for (ISpringInjector injector : list) injector.unregister(c);
                 }
             }
         } catch (Exception e) {
