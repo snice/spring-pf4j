@@ -15,14 +15,15 @@
  */
 package com.github.snice.spring.pf4j;
 
-import com.github.snice.spring.pf4j.listener.PluginListener;
+import com.github.snice.spring.pf4j.listener.PluginAppListener;
 import org.pf4j.Plugin;
 import org.pf4j.PluginWrapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 
 import java.util.Collection;
 
@@ -31,18 +32,19 @@ import java.util.Collection;
  */
 public abstract class SpringPlugin extends Plugin {
 
-
-    private boolean isRefreshed;
-
     private ApplicationContext applicationContext;
 
-    private ApplicationListener<ContextRefreshedEvent> applicationListener = event -> {
-        if (applicationContext == null) return;
-        if (isRefreshed) return;
-        isRefreshed = true;
-        Collection<PluginListener> pluginListeners = getApplicationContext().getParent().getBeansOfType(PluginListener.class).values();
-        for (PluginListener listener : pluginListeners) {
-            listener.onPluginEvent(event);
+    private ApplicationListener<ContextStartedEvent> startedEventApplicationListener = event -> {
+        Collection<PluginAppListener> pluginAppListeners = getApplicationContext().getParent().getBeansOfType(PluginAppListener.class).values();
+        for (PluginAppListener listener : pluginAppListeners) {
+            listener.onPluginStarted(event);
+        }
+    };
+
+    private ApplicationListener<ContextStoppedEvent> stoppedEventApplicationListener = event -> {
+        Collection<PluginAppListener> pluginAppListeners = getApplicationContext().getParent().getBeansOfType(PluginAppListener.class).values();
+        for (PluginAppListener listener : pluginAppListeners) {
+            listener.onPluginStopped(event);
         }
     };
 
@@ -62,6 +64,7 @@ public abstract class SpringPlugin extends Plugin {
     public void stop() {
         // close applicationContext
         if ((applicationContext != null) && (applicationContext instanceof ConfigurableApplicationContext)) {
+            ((ConfigurableApplicationContext) applicationContext).stop();
             ((ConfigurableApplicationContext) applicationContext).close();
         }
         applicationContext = null;
@@ -73,9 +76,22 @@ public abstract class SpringPlugin extends Plugin {
         applicationContext.setClassLoader(getWrapper().getPluginClassLoader());
         applicationContext.setParent(appContext);
         applicationContext.register(componentClasses());
-        applicationContext.addApplicationListener(applicationListener);
+        applicationContext.addApplicationListener(startedEventApplicationListener);
+        applicationContext.addApplicationListener(stoppedEventApplicationListener);
         applicationContext.refresh();
+        new Thread(() -> {
+            try {
+                Thread.sleep(delayStart());
+                applicationContext.start();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }).start();
         return applicationContext;
+    }
+
+    public long delayStart() {
+        return 500L;
     }
 
     public abstract Class[] componentClasses();
