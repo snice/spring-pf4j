@@ -19,10 +19,10 @@ import org.pf4j.DefaultPluginManager;
 import org.pf4j.ExtensionFactory;
 import org.pf4j.PluginState;
 import org.springframework.beans.BeansException;
+import org.springframework.boot.availability.AvailabilityChangeEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 
 import javax.annotation.PostConstruct;
 import java.nio.file.Path;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 /**
  * @author Decebal Suiu
  */
-public class SpringPluginManager extends DefaultPluginManager implements ApplicationContextAware, ApplicationListener<ContextRefreshedEvent> {
+public class SpringPluginManager extends DefaultPluginManager implements ApplicationContextAware, ApplicationListener<AvailabilityChangeEvent> {
 
     private ApplicationContext applicationContext;
 
@@ -74,14 +74,12 @@ public class SpringPluginManager extends DefaultPluginManager implements Applica
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent event) {
+    public void onApplicationEvent(AvailabilityChangeEvent event) {
         if (extensionsInjector != null) return;
-        if (event.getApplicationContext().getParent() == null) {//保证只执行一次
-            //需要执行的方法
-            extensionsInjector = new ExtensionsInjector(this, this.applicationContext);
-            for (String pluginId : getPlugins(PluginState.STARTED).stream().map(it -> it.getPluginId()).collect(Collectors.toList())) {
-                extensionsInjector.injectExtensions(pluginId);
-            }
+        //需要执行的方法
+        extensionsInjector = new ExtensionsInjector(this, this.applicationContext);
+        for (String pluginId : getPlugins(PluginState.STARTED).stream().map(it -> it.getPluginId()).collect(Collectors.toList())) {
+            extensionsInjector.injectExtensions(pluginId);
         }
     }
 
